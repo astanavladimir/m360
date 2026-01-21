@@ -288,6 +288,70 @@
         }
     }
 </script>
+<!-- КНОПКА СОХРАНЕНИЯ -->
+<div class="save-block" style="text-align: center; margin: 40px 0;">
+    <button onclick="downloadScreenshot()" class="save-btn">
+        📸 Скачать мой результат
+    </button>
+    <div id="loading-text" style="display:none; color: #7f8c8d; font-size: 13px; margin-top: 5px;">
+        Создаю снимок...
+    </div>
+</div>
 
+<!-- СТИЛИ ДЛЯ КНОПКИ -->
+<style>
+    .save-btn {
+        background: #34495e;
+        color: #fff;
+        border: none;
+        padding: 12px 25px;
+        border-radius: 8px;
+        font-size: 16px;
+        cursor: pointer;
+        transition: 0.2s;
+        font-family: Arial, sans-serif;
+    }
+    .save-btn:hover { background: #2c3e50; transform: translateY(-2px); box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+    .save-btn:active { transform: translateY(0); }
+</style>
+
+<!-- БИБЛИОТЕКА HTML2CANVAS (Берем с CDN) -->
+<script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+
+<!-- СКРИПТ СОХРАНЕНИЯ -->
+<script>
+    function downloadScreenshot() {
+        const btn = document.querySelector('.save-btn');
+        const loader = document.getElementById('loading-text');
+        const content = document.body; // Можно заменить на document.querySelector('.m360-dashboard')
+
+        // 1. Показываем индикатор загрузки и прячем кнопку (чтобы она не попала на скрин)
+        btn.style.display = 'none';
+        loader.style.display = 'block';
+
+        // 2. Делаем скриншот
+        html2canvas(content, {
+            scale: 2, // Улучшает качество (Retina)
+            backgroundColor: '#ffffff', // Белый фон, т.к. у нас прозрачный
+            scrollX: 0,
+            scrollY: 0
+        }).then(canvas => {
+            // 3. Создаем ссылку для скачивания
+            const link = document.createElement('a');
+            link.download = 'мой-результат-м360.png';
+            link.href = canvas.toDataURL("image/png");
+            link.click();
+
+            // 4. Возвращаем кнопку назад
+            btn.style.display = 'inline-block';
+            loader.style.display = 'none';
+        }).catch(err => {
+            console.error(err);
+            alert("Ошибка при сохранении. Попробуйте скриншот экрана.");
+            btn.style.display = 'inline-block';
+            loader.style.display = 'none';
+        });
+    }
+</script>
 </body>
 </html>
