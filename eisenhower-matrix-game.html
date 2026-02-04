@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Матрица Эйзенхауэра - Игра</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            width: 100%;
+        }
+
+        .progress-bar {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .progress-text {
+            color: #495761;
+            font-size: 14px;
+            margin-bottom: 10px;
+            font-weight: 500;
+        }
+
+        .progress-track {
+            height: 8px;
+            background: #e0e0e0;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: #003B48;
+            border-radius: 4px;
+            transition: width 0.3s ease;
+        }
+
+        .task-card {
+            background: white;
+            border-radius: 16px;
+            padding: 40px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+            min-height: 200px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+        }
+
+        .task-card h2 {
+            color: #003B48;
+            font-size: 28px;
+            line-height: 1.4;
+        }
+
+        .matrix-container {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .importance-labels {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            font-weight: 600;
+            color: #003B48;
+            font-size: 16px;
+            min-width: 100px;
+        }
+
+        .importance-label {
+            height: 140px;
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            padding-right: 15px;
+        }
+
+        .matrix-grid {
+            flex: 1;
+        }
+
+        .buttons-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+
+        .urgency-labels {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            font-weight: 600;
+            color: #003B48;
+            font-size: 16px;
+            text-align: center;
+        }
+
+        @media (max-width: 600px) {
+            .matrix-container {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            
+            .importance-labels {
+                flex-direction: row;
+                min-width: auto;
+                justify-content: space-around;
+            }
+            
+            .importance-label {
+                height: auto;
+                justify-content: center;
+                padding: 10px;
+            }
+            
+            .buttons-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .urgency-labels {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .quadrant-btn {
+            background: white;
+            border: 3px solid #003B48;
+            border-radius: 8px;
+            padding: 30px 20px;
+            font-size: 18px;
+            font-weight: 600;
+            color: #003B48;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            height: 140px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .quadrant-btn:hover:not(:disabled) {
+            background: #003B48;
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 59, 72, 0.3);
+        }
+
+        .quadrant-btn:disabled {
+            cursor: not-allowed;
+            opacity: 0.6;
+        }
+
+        .quadrant-btn.correct {
+            background: #003B48;
+            color: white;
+            border-color: #003B48;
+            animation: pulse 0.5s ease;
+        }
+
+        .quadrant-btn.wrong {
+            background: #C31532;
+            color: white;
+            border-color: #C31532;
+            animation: shake 0.5s ease;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-10px); }
+            75% { transform: translateX(10px); }
+        }
+
+        .feedback {
+            background: #fff3cd;
+            border: 2px solid #ffc107;
+            border-radius: 8px;
+            padding: 15px;
+            margin-top: 20px;
+            color: #856404;
+            font-weight: 500;
+            text-align: center;
+            display: none;
+        }
+
+        .feedback.show {
+            display: block;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .result-screen {
+            background: white;
+            border-radius: 16px;
+            padding: 60px 40px;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+            display: none;
+        }
+
+        .result-screen.show {
+            display: block;
+            animation: fadeIn 0.5s ease;
+        }
+
+        .result-screen h1 {
+            color: #003B48;
+            font-size: 36px;
+            margin-bottom: 20px;
+        }
+
+        .score {
+            font-size: 72px;
+            font-weight: bold;
+            color: #003B48;
+            margin: 30px 0;
+        }
+
+        .score-label {
+            color: #495761;
+            font-size: 18px;
+            margin-bottom: 40px;
+        }
+
+        .restart-btn {
+            background: #003B48;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 15px 40px;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .restart-btn:hover {
+            background: #005266;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 59, 72, 0.3);
+        }
+
+        .game-screen {
+            display: block;
+        }
+
+        .game-screen.hide {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Game Screen -->
+        <div class="game-screen" id="gameScreen">
+            <div class="progress-bar">
+                <div class="progress-text" id="progressText">Задача 1 из 5</div>
+                <div class="progress-track">
+                    <div class="progress-fill" id="progressFill" style="width: 20%"></div>
+                </div>
+            </div>
+
+            <div class="task-card">
+                <h2 id="taskText">Упал сервер</h2>
+            </div>
+
+            <div class="matrix-container">
+                <div class="importance-labels">
+                    <div class="importance-label">Важно</div>
+                    <div class="importance-label">Не важно</div>
+                </div>
+                
+                <div class="matrix-grid">
+                    <div class="buttons-grid">
+                        <button class="quadrant-btn" data-quadrant="do">
+                            Сделать
+                        </button>
+                        <button class="quadrant-btn" data-quadrant="plan">
+                            Запланировать
+                        </button>
+                        <button class="quadrant-btn" data-quadrant="delegate">
+                            Делегировать
+                        </button>
+                        <button class="quadrant-btn" data-quadrant="delete">
+                            Удалить
+                        </button>
+                    </div>
+                    
+                    <div class="urgency-labels">
+                        <div>Срочно</div>
+                        <div>Не срочно</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="feedback" id="feedback"></div>
+        </div>
+
+        <!-- Result Screen -->
+        <div class="result-screen" id="resultScreen">
+            <h1>Игра завершена!</h1>
+            <div class="score" id="finalScore">0/5</div>
+            <div class="score-label">Правильных ответов</div>
+            <button class="restart-btn" onclick="restartGame()">Начать заново</button>
+        </div>
+    </div>
+
+    <script>
+        const tasks = [
+            {
+                text: "Упал сервер",
+                correct: "do",
+                hints: {
+                    plan: "Срочно ли это? Можно ли отложить на потом?",
+                    delegate: "А это точно можно делегировать? Кто справится быстрее вас?",
+                    delete: "Это действительно не важно? А если клиенты не могут работать?"
+                }
+            },
+            {
+                text: "Написать стратегию на год",
+                correct: "plan",
+                hints: {
+                    do: "Срочно ли это? Нужно ли делать прямо сейчас?",
+                    delegate: "А это точно важно? Можно ли это делегировать или лучше сделать самому?",
+                    delete: "Это действительно не важно? А как же развитие компании?"
+                }
+            },
+            {
+                text: "Купить билеты коллеге",
+                correct: "delegate",
+                hints: {
+                    do: "Срочно ли это настолько? А это точно ваша задача?",
+                    plan: "А это точно важно для вас лично? Может, кто-то другой справится?",
+                    delete: "Это точно не важно? А если коллега опоздает на встречу?"
+                }
+            },
+            {
+                text: "Рекламная рассылка",
+                correct: "delete",
+                hints: {
+                    do: "Срочно ли это? А это точно важно? Стоит ли тратить на это время сейчас?",
+                    plan: "А это точно важно? Принесет ли это реальную пользу?",
+                    delegate: "Срочно ли это? Стоит ли вообще кого-то этим нагружать?"
+                }
+            },
+            {
+                text: "Отчет директору к 12:00",
+                correct: "do",
+                hints: {
+                    plan: "Срочно ли это? Посмотрите на дедлайн еще раз.",
+                    delegate: "А это точно можно делегировать? Кто знает детали лучше вас?",
+                    delete: "Это действительно не важно? А что скажет директор?"
+                }
+            }
+        ];
+
+        let currentTask = 0;
+        let score = 0;
+
+        const taskText = document.getElementById('taskText');
+        const progressText = document.getElementById('progressText');
+        const progressFill = document.getElementById('progressFill');
+        const feedback = document.getElementById('feedback');
+        const buttons = document.querySelectorAll('.quadrant-btn');
+        const gameScreen = document.getElementById('gameScreen');
+        const resultScreen = document.getElementById('resultScreen');
+        const finalScore = document.getElementById('finalScore');
+
+        // Initialize
+        loadTask();
+
+        buttons.forEach(btn => {
+            btn.addEventListener('click', function() {
+                if (this.disabled) return;
+                handleAnswer(this.dataset.quadrant, this);
+            });
+        });
+
+        function loadTask() {
+            if (currentTask >= tasks.length) {
+                showResults();
+                return;
+            }
+
+            const task = tasks[currentTask];
+            taskText.textContent = task.text;
+            progressText.textContent = `Задача ${currentTask + 1} из ${tasks.length}`;
+            progressFill.style.width = `${((currentTask + 1) / tasks.length) * 100}%`;
+            
+            feedback.classList.remove('show');
+            
+            buttons.forEach(btn => {
+                btn.disabled = false;
+                btn.classList.remove('correct', 'wrong');
+            });
+        }
+
+        function handleAnswer(selectedQuadrant, button) {
+            const task = tasks[currentTask];
+            const isCorrect = selectedQuadrant === task.correct;
+
+            if (isCorrect) {
+                // Correct answer - disable all buttons and proceed
+                buttons.forEach(btn => btn.disabled = true);
+                button.classList.add('correct');
+                score++;
+                feedback.textContent = '✓ Правильно!';
+                feedback.style.background = '#d4edda';
+                feedback.style.borderColor = '#c3e6cb';
+                feedback.style.color = '#155724';
+                feedback.classList.add('show');
+                
+                setTimeout(() => {
+                    currentTask++;
+                    loadTask();
+                }, 1000);
+            } else {
+                // Wrong answer - show hint and allow retry
+                button.classList.add('wrong');
+                button.disabled = true;
+                
+                const hint = task.hints[selectedQuadrant];
+                feedback.textContent = `✗ ${hint}`;
+                feedback.style.background = '#fff3cd';
+                feedback.style.borderColor = '#ffc107';
+                feedback.style.color = '#856404';
+                feedback.classList.add('show');
+                
+                // Remove wrong animation after it completes
+                setTimeout(() => {
+                    button.classList.remove('wrong');
+                }, 500);
+            }
+        }
+
+        function showResults() {
+            gameScreen.classList.add('hide');
+            resultScreen.classList.add('show');
+            finalScore.textContent = `${score}/${tasks.length}`;
+        }
+
+        function restartGame() {
+            currentTask = 0;
+            score = 0;
+            gameScreen.classList.remove('hide');
+            resultScreen.classList.remove('show');
+            loadTask();
+        }
+    </script>
+</body>
+</html>
