@@ -85,7 +85,33 @@
             z-index: 20;
             box-shadow: 0 4px 10px rgba(0,0,0,0.3);
         }
+        
+/* --- СПЕЦИАЛЬНЫЙ ТУЛТИП ДЛЯ МОНИТОРА (СНИЗУ) --- */
+        /* Позиционируем снизу от объекта, так как сверху нет места */
+        .tooltip-bottom {
+            top: 100%; /* Прижимаем к нижнему краю зоны */
+            bottom: auto; /* Сбрасываем стандартное позиционирование */
+            left: 50%;
+            transform: translateX(-50%);
+            margin-top: 8px; /* Небольшой отступ от зоны */
+        }
 
+        /* Стрелочка для нижнего тултипа (должна смотреть ВВЕРХ) */
+        .tooltip-bottom::after {
+            top: auto;
+            bottom: 100%; /* Стрелка сверху тултипа */
+            border-width: 6px;
+            border-style: solid;
+            /* Цвет стрелки: Прозрачный - Прозрачный - Темный - Прозрачный */
+            border-color: transparent transparent var(--ui-dark) transparent;
+        }
+
+        /* Анимация появления для нижнего тултипа (сдвиг вниз) */
+        .click-zone.found .tooltip-bottom {
+            transform: translateX(-50%) translateY(5px);
+        }
+
+        
         .tooltip::after {
             content: "";
             position: absolute;
@@ -134,7 +160,7 @@
         /* --- КООРДИНАТЫ ОБЪЕКТОВ --- */
         
         /* ОШИБКИ (Красные зоны) */
-        #zone-monitor { top: 4%; left: 1%; width: 82%; height: 28%; }
+        #zone-monitor { top: 4%; left: 1%; width: 84%; height: 24%; }
         #zone-phone { top: 44%; left: 1.5%; width: 17.5%; height: 18.5%; }
         #zone-note { top: 39.2%; left: 66.8%; width: 16.5%; height: 13%; }
         #zone-papers { top: 27%; left: 86%; width: 14%; height: 33%; }
@@ -215,7 +241,8 @@
 
         <!-- --- ОШИБКИ (Target) --- -->
         <div class="click-zone target" id="zone-monitor" onclick="handleClick(this, true)">
-            <div class="tooltip tooltip-center">Слишком много окон! Многозадачность убивает фокус.</div>
+            <!-- Используем tooltip-bottom, чтобы он появился ПОД зоной клика -->
+            <div class="tooltip tooltip-bottom">Слишком много окон! Многозадачность убивает фокус.</div>
         </div>
 
         <div class="click-zone target" id="zone-phone" onclick="handleClick(this, true)">
