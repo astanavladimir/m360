@@ -168,10 +168,10 @@
         /* ДИСТРАКТОРЫ (Зеленые зоны) */
         /* Блокнот (слева внизу) */
         #zone-notebook { 
-            top: 70%; 
+            top: 80%; 
             left: 1%; 
             width: 14%; 
-            height: 30%; 
+            height: 20%; 
         }
         
         /* Ручка (между телефоном и монитором или просто на столе) */
@@ -179,8 +179,8 @@
             top: 55%; 
             left: 1%; 
             width: 5%; 
-            height: 10%;
-            transform: rotate(45deg); /* Если нужно повернуть зону клика */
+            height: 25%;
+            /*transform: rotate(45deg); /* Если нужно повернуть зону клика */
         }
 
         /* Счетчик */
@@ -264,8 +264,8 @@
         </div>
 
         <!-- Ручка -->
-        <div class="click-zone target" id="zone-pen" onclick="handleClick(this, false)">
-            <div class="tooltip neutral-tip tooltip-center">Просто ручка. Никаких проблем.</div>
+        <div class="click-zone distractor" id="zone-pen" onclick="handleClick(this, false)">
+            <div class="tooltip neutral-tip tooltip-left">Просто ручка. Никаких проблем.</div>
         </div>
 
 
